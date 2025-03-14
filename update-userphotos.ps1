@@ -24,7 +24,6 @@ function Get-AccessToken {
 
 
 #Get All Users (excluding guests)
-
 $Uri = "https://graph.microsoft.com/beta/users?`$filter=accountEnabled eq true and usertype eq 'Member'&`$select=id,displayName,userPrincipalName,userType,accountEnabled,createdDateTime"
 
 $AccessToken = Get-AccessToken
@@ -52,7 +51,6 @@ while ($RequestUri) {
 }
 
 Write-Host "Total Users Retrieved: $($UsersTable.Count)"
-
 
 # Retrieve user photos
 $MaxBatchSize = 20 # Graph API limit
@@ -115,8 +113,6 @@ Write-Host "Total Users With Photos: $($UsersWithPhotos.Count)"
 # validate that the users reported with a photo is correct
 $UsersWithPhotos.Keys | Select-Object -First 20
 
-  
-
 # validate users without a photo
 $UsersTable.Keys | Where-Object { -not $UsersWithPhotos.Contains($_) } | ForEach-Object {
     [PSCustomObject]@{
@@ -127,8 +123,6 @@ $UsersTable.Keys | Where-Object { -not $UsersWithPhotos.Contains($_) } | ForEach
         CreatedDate = $UsersTable[$_].createdDateTime
     }
 } | Format-Table -AutoSize
-
-  
 
 # Patch only users with missing photo
 $BasePhotoPath = "/Photos/InProgress/"
