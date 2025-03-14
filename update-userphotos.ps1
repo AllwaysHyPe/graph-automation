@@ -1,7 +1,3 @@
-#Authenticate with my current user
-
-#Connect-MgGraph -Scopes "User.Read.All", "Directory.Read.All", "User.ReadWrite.All"
- 
 # Function to authenticate and retrieve the access token
 
 function Get-AccessToken {
