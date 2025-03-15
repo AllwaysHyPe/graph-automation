@@ -35,7 +35,7 @@ while ($RequestUri) {
         $UsersTable[$User.id] = $User
     }
 
-    Write-Output "Retrieved $($Response.value.Count) users. Total so far: $($UsersTable.Count)"
+    Write-Host "Retrieved $($Response.value.Count) users. Total so far: $($UsersTable.Count)"
 
     # Check for additional page of results
     $RequestUri = $Response.'@odata.nextLink'
@@ -46,36 +46,53 @@ Write-Output "Total Users Retrieved: $($UsersTable.Count)"
 
 
 $BasePhotoPath = "C:\Photos\InProgress\"
-$ExistingPhotos = Get-ChildItem -Path $BasePhotoPath -Filter "*.jpg" | Select-Object -ExpandProperty Name
+$CompletedPhotoPath = "C:\Photos\Completed\"
+$ExistingPhotos = Get-ChildItem -Path $BasePhotoPath -Filter "*.jpg" 
 
 Write-Output "Total photos available in directory: $($ExistingPhotos.Count)"
 
-# Find users with missing photos, but have a matching photo in folder
-
-$UsersToPatch = $UsersTable.Keys | Where-Object {
-    -not $UsersWithPhotos.Contains($_) -and ("$($UsersTable[$_].displayName).jpg" -in $ExistingPhotos)
+# Convert photo filename to lookup ordered hashtable
+$PhotoLookup = [ordered]@{}
+foreach ($Photo in $ExistingPhotos) {
+    $NamesWithoutExt = [System.IO.Path]::GetFileNameWithoutExtension($Photo)
+    $PhotoLookup[$NamesWithoutExt] = $Photo.FullName
 }
 
-Write-Output "Users to be patched: $($UsersToPatch.Count)"
+
 
 # Patch users that need photos
+$UsersToUpdate = [ordered]@{}
+
+foreach ($UserID in $UsersTable.Keys) {
+    $User = $UsersTable[$UserId]
+    $NormalizedDisplayName = $User.displayName.Trim()
+    $PhotoFileName = "$($User.displayName).jpg"
+
+    # If user has a matching photo, queue for update
+    if ($PhotoLookup.Contains($NormalizedDisplayName)) {
+        $UsersToUpdate[$UserID] = @{
+            displayName = $User.displayName
+            PhotoPath = $PhotoLookup[$NormalizedDisplayName]
+        }
+    }
+}
+Write-Output "Users to Update: $($UsersToUpdate.Count)"   
+
+# Upload photos for specified users
 $UsersPatched = [ordered]@{}
 
-foreach ($UserID in $UsersToPatch) {
-    $User = $UsersTable[$UserID]
-    $UserPhotoPath = "$BasePhotoPath$($User.displayName).jpg"
-    
+foreach ($UserID in $UsersToUpdate.Keys) {
+    $User = $UsersToUpdate[$UserID]
+    $UserPhotoPath = $User.PhotoPath
+
     if (Test-Path $UserPhotoPath) {
-        # Convert photo to Base64
+        # Read binary file
         $PhotoBytes = [System.IO.File]::ReadAllBytes($UserPhotoPath)
         Write-Output "Binary Data Debugging for $($User.displayName) ($UserID)"
         Write-Output "File Size: $($PhotoBytes.Length) bytes"
         Write-Output "First 10 Bytest (Hex): $([BitConverter]::ToString($PhotoBytes[0..9]))"
-        $EncodedPhoto = [Convert]::ToBase64String($PhotoBytes)
 
-        # Create PATCH request
-        $PatchBody = $EncodedPhoto | ConvertTo-Json -Depth 10
-
+        # Create Patch Request
         $PatchRequestProperties = @{
             Uri = "https://graph.microsoft.com/beta/users/$UserID/photo/`$value"
             Method = "PUT"
@@ -89,7 +106,12 @@ foreach ($UserID in $UsersToPatch) {
         try {
             Invoke-RestMethod @PatchRequestProperties
             Write-Host "Successfully updated photo for $($User.displayName) ($UserID)"
-            
+
+            # Move file to completed folder
+            $NewFilePath = "$CompletedPhotoPath$($User.DisplayName).jpg"
+            Move-Item -Path $UserPhotoPath -Destination $NewFilePath -Force
+            Write-Output "Moved photo to Completed Folder: $NewFilePath"
+
             # Store successful patch attempt
             $UsersPatched[$UserID] = [PSCustomObject]@{
                 UserID = $UserID
@@ -102,8 +124,8 @@ foreach ($UserID in $UsersToPatch) {
             Write-Output "Full API Response: $($_ | ConvertTo-JSON -Depth 10)"
         }
     } else {
-        Write-Output "Photo not found for $($User.displayName) ($UserID)"
+    Write-Output "Photo not found for $($User.displayName) ($UserID)"
     }
 }
 
-Write-Host "Total Users Successfully Patched: $($UsersPatched.Count)"
+Write-Output "Total Users Successfully Patched: $($UsersPatched.Count)"
