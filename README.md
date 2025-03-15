@@ -52,3 +52,41 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
    - **Source Folder:** `/Photos/InProgress/`
    - **Completed Folder:** `/Photos/Completed/`
    - Filenames **must match user display names** (e.g., `Jane Doe.jpg`).
+
+---
+
+## Deployment Instructions
+
+### **Running the Script in Azure Automation (Hybrid Worker via Azure Arc)**
+1. Clone this repository or copy `GraphUserPhotoSync-Automation.ps1`.
+2. Upload the script to **Azure Automation Runbooks**.
+3. Ensure the **Hybrid Worker is connected via Azure Arc** and has access to Microsoft Graph.
+4. Run the script manually or as a **scheduled job**.
+
+---
+
+## Logging & Debugging
+This script provides **detailed logs**:
+- **Users retrieved from Entra ID** (stored in an ordered hash table).
+- **Photos matched to users**.
+- **File sizes before upload**.
+- **Success and failure messages for uploads**.
+- **Full API response errors, if applicable**.
+
+---
+
+## Why Use This Script?
+- **Does not require the Microsoft.Graph PowerShell module.**
+- **Uses direct `Invoke-RestMethod` calls** for full control.
+- **Minimizes Graph API consumption** by efficiently handling users before uploading.
+- **Runs on a Hybrid Worker via Azure Arc**, avoiding execution limits.
+- **Automatically organizes processed photos**, keeping the directory clean.
+
+---
+
+## Future Enhancements
+- Add support for **resizing images** before upload.
+- Improve error handling for **invalid filenames** or **missing users**.
+- Convert this into a **module** for easier deployment.
+
+---
