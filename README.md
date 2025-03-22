@@ -45,8 +45,9 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
 
 2. **Managed Identity with Graph API Permissions**
    - Requires:
-     - `User.ReadWrite.All` (to update profile photos)
+     - `Directory.Read.All`
      - `User.Read.All` (to fetch user details)
+     - `ProfilePhoto.ReadWrite.All` (to update profile photos)
 
 3. **Local Photo Directory**
    - **Source Folder:** `/Photos/InProgress/`

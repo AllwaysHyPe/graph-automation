@@ -1,13 +1,21 @@
 # Import required modules
 Import-Module Az.Accounts
 
+function log {
+    param(
+        [string]$Message
+    )
+    $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Write-Output = "$TimeStamp - $Message"
+}
+
 # Connect using Managed Identity
 try {
     Connect-AzAccount -Identity -ErrorAction Stop | Out-Null
     $AccessToken = Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com" -ErrorAction Stop
-    Write-Output "Successfully authenticated using Managed Identity!"
+    log "Successfully authenticated using Managed Identity!"
 } catch {
-    Write-Error "Failed to authenticate using Managed Identity: $_" -ErrorAction Stop
+    log "Failed to authenticate using Managed Identity: $_" -ErrorAction Stop
     Exit
 }
 
@@ -17,14 +25,14 @@ $Headers = @{
     "Content-Type" = "application/json"
 }
 
-Write-Output $Headers
+log $Headers
 
 # Get All Users (excluding guests)
 $Uri = "https://graph.microsoft.com/beta/users?`$filter=accountEnabled eq true and usertype eq 'Member'&`$select=id,displayName,userPrincipalName,userType,accountEnabled,createdDateTime"
 $UsersTable = [ordered]@{}
 $RequestUri = $Uri
 
-Write-Output "Fetching users..."
+log "Fetching users..."
 
 while ($RequestUri) {
     # Make Graph API call
@@ -35,13 +43,13 @@ while ($RequestUri) {
         $UsersTable[$User.id] = $User
     }
 
-    Write-Host "Retrieved $($Response.value.Count) users. Total so far: $($UsersTable.Count)"
+    log "Retrieved $($Response.value.Count) users. Total so far: $($UsersTable.Count)"
 
     # Check for additional page of results
     $RequestUri = $Response.'@odata.nextLink'
 }
 
-Write-Output "Total Users Retrieved: $($UsersTable.Count)"
+log "Total Users Retrieved: $($UsersTable.Count)"
 
 
 
@@ -49,7 +57,7 @@ $BasePhotoPath = "C:\Photos\InProgress\"
 $CompletedPhotoPath = "C:\Photos\Completed\"
 $ExistingPhotos = Get-ChildItem -Path $BasePhotoPath -Filter "*.jpg" 
 
-Write-Output "Total photos available in directory: $($ExistingPhotos.Count)"
+log "Total photos available in directory: $($ExistingPhotos.Count)"
 
 # Convert photo filename to lookup ordered hashtable
 $PhotoLookup = [ordered]@{}
@@ -76,7 +84,7 @@ foreach ($UserID in $UsersTable.Keys) {
         }
     }
 }
-Write-Output "Users to Update: $($UsersToUpdate.Count)"   
+log "Users to Update: $($UsersToUpdate.Count)"   
 
 # Upload photos for specified users
 $UsersPatched = [ordered]@{}
@@ -88,9 +96,9 @@ foreach ($UserID in $UsersToUpdate.Keys) {
     if (Test-Path $UserPhotoPath) {
         # Read binary file
         $PhotoBytes = [System.IO.File]::ReadAllBytes($UserPhotoPath)
-        Write-Output "Binary Data Debugging for $($User.displayName) ($UserID)"
-        Write-Output "File Size: $($PhotoBytes.Length) bytes"
-        Write-Output "First 10 Bytest (Hex): $([BitConverter]::ToString($PhotoBytes[0..9]))"
+        log "Binary Data Debugging for $($User.displayName) ($UserID)"
+        log "File Size: $($PhotoBytes.Length) bytes"
+        log "First 10 Bytest (Hex): $([BitConverter]::ToString($PhotoBytes[0..9]))"
 
         # Create Patch Request
         $PatchRequestProperties = @{
@@ -105,12 +113,12 @@ foreach ($UserID in $UsersToUpdate.Keys) {
         
         try {
             Invoke-RestMethod @PatchRequestProperties
-            Write-Host "Successfully updated photo for $($User.displayName) ($UserID)"
+            log "Successfully updated photo for $($User.displayName) ($UserID)"
 
             # Move file to completed folder
             $NewFilePath = "$CompletedPhotoPath$($User.DisplayName).jpg"
             Move-Item -Path $UserPhotoPath -Destination $NewFilePath -Force
-            Write-Output "Moved photo to Completed Folder: $NewFilePath"
+            log "Moved photo to Completed Folder: $NewFilePath"
 
             # Store successful patch attempt
             $UsersPatched[$UserID] = [PSCustomObject]@{
@@ -120,12 +128,12 @@ foreach ($UserID in $UsersToUpdate.Keys) {
                 PhotoPath = $UserPhotoPath
             }
         } catch {
-            Write-Output "Failed to update photo for $($User.displayName) ($UserID): $_.Exception.Message"
-            Write-Output "Full API Response: $($_ | ConvertTo-JSON -Depth 10)"
+            log "Failed to update photo for $($User.displayName) ($UserID): $_.Exception.Message"
+            log "Full API Response: $($_ | ConvertTo-JSON -Depth 10)"
         }
     } else {
-    Write-Output "Photo not found for $($User.displayName) ($UserID)"
+    log "Photo not found for $($User.displayName) ($UserID)"
     }
 }
 
-Write-Output "Total Users Successfully Patched: $($UsersPatched.Count)"
+log "Total Users Successfully Patched: $($UsersPatched.Count)"
