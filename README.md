@@ -39,18 +39,20 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
 ## Setup & Prerequisites
 
 ### **Required Components**
-1. **Azure Automation Account**
-   - Must be running on a **Hybrid Worker deployed via Azure Arc**.
-   - Must use PowerShell 7 in Automation Account.
-2. **Managed Identity with Graph API Permissions**
-   - Requires:
-     - `Directory.Read.All`
-     - `User.Read.All` (to fetch user details)
-     - `ProfilePhoto.ReadWrite.All` (to update profile photos)
-3. **Local Photo Directory**
-   - **Source Folder:** `/Photos/InProgress/`
-   - **Completed Folder:** `/Photos/Completed/`
-   - Filenames **must match user display names** (e.g., `Jane Doe.jpg`).
+1. **Azure Automation Account**  
+   - Must be running on a **Hybrid Worker deployed via Azure Arc**.  
+   - Must use PowerShell 7 in Automation Account.  
+
+2. **Managed Identity with Graph API Permissions**  
+   - Requires:  
+     - `Directory.Read.All`  
+     - `User.Read.All` (to fetch user details)  
+     - `ProfilePhoto.ReadWrite.All` (to update profile photos)  
+
+3. **Local Photo Directory**  
+   - **Source Folder:** `/Photos/InProgress/`  
+   - **Completed Folder:** `/Photos/Completed/`  
+   - Filenames **must match user display names** (e.g., `Jane Doe.jpg`).  
 
 ---
 
