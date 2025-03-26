@@ -44,7 +44,7 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
    - Must use PowerShell 7 in Automation Account.  
 
 2. **Managed Identity with Graph API Permissions**  
-   - Requires:  
+   Requires:  
      - `Directory.Read.All`  
      - `User.Read.All` (to fetch user details)  
      - `ProfilePhoto.ReadWrite.All` (to update profile photos)  
