@@ -1,6 +1,3 @@
-# Import required modules
-Import-Module Az.Accounts
-
 function log {
     param(
         [string]$Message
@@ -8,6 +5,17 @@ function log {
     $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     Write-Output = "$TimeStamp - $Message"
 }
+
+# Define photo paths
+$BasePhotoPath = # Example: "C:\Photos\InProgress\"
+$CompletedPhotoPath = # Example: "C:\Photos\Completed\"
+$ExistingPhotos = Get-ChildItem -Path $BasePhotoPath -Filter "*.jpg" 
+
+log "Total photos available in directory: $($ExistingPhotos.Count)"
+
+
+# Import Azure Module
+Import-Module Az.Accounts
 
 # Connect using Managed Identity
 try {
@@ -51,22 +59,12 @@ while ($RequestUri) {
 
 log "Total Users Retrieved: $($UsersTable.Count)"
 
-
-
-$BasePhotoPath = "C:\Photos\InProgress\"
-$CompletedPhotoPath = "C:\Photos\Completed\"
-$ExistingPhotos = Get-ChildItem -Path $BasePhotoPath -Filter "*.jpg" 
-
-log "Total photos available in directory: $($ExistingPhotos.Count)"
-
 # Convert photo filename to lookup ordered hashtable
 $PhotoLookup = [ordered]@{}
 foreach ($Photo in $ExistingPhotos) {
     $NamesWithoutExt = [System.IO.Path]::GetFileNameWithoutExtension($Photo)
     $PhotoLookup[$NamesWithoutExt] = $Photo.FullName
 }
-
-
 
 # Patch users that need photos
 $UsersToUpdate = [ordered]@{}
@@ -84,6 +82,7 @@ foreach ($UserID in $UsersTable.Keys) {
         }
     }
 }
+
 log "Users to Update: $($UsersToUpdate.Count)"   
 
 # Upload photos for specified users
