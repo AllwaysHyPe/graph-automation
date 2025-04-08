@@ -1,5 +1,6 @@
 # GraphUserPhotoSync-Automation
 
+
 ## Overview
 This script automates **user photo updates** in **Microsoft Entra ID (Azure AD)** using **Microsoft Graph API**.  
 It retrieves **all users** first, **stores them in an ordered hash table**, finds **matching photos in a local directory** (such as an **Azure Arc-enabled server**), and updates their profile photos—without requiring the `Microsoft.Graph` PowerShell module.
@@ -10,7 +11,6 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
 - **Authentication via a Managed Identity** aka no passwords to manage.
 - **Processes users efficiently** by handling all retrievals before performing updates.
 
----
 
 ## How It Works
 
@@ -34,7 +34,6 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
 - After a **successful upload**, moves the photo to **/Photos/Completed/**.
 - Keeps the `/InProgress/` folder **clean** and **organized**.
 
----
 
 ## Setup & Prerequisites
 
@@ -53,7 +52,6 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
    - **Completed Folder:** `/Photos/Completed/`  
    - Filenames **must match user display names** (e.g., `Jane Doe.jpg`).  
 
----
 
 ## Deployment Instructions
 
@@ -63,7 +61,6 @@ It retrieves **all users** first, **stores them in an ordered hash table**, find
 3. Ensure the **Hybrid Worker is connected via Azure Arc** and has access to Microsoft Graph.
 4. Run the script manually or as a **scheduled job**.
 
----
 
 ## Logging & Debugging
 This script provides **detailed logs**:
@@ -73,7 +70,6 @@ This script provides **detailed logs**:
 - **Success and failure messages for uploads**.
 - **Full API response errors, if applicable**.
 
----
 
 ## Why Use This Script?
 - **Does not require the Microsoft.Graph PowerShell module.**
@@ -82,11 +78,8 @@ This script provides **detailed logs**:
 - **Runs on a Hybrid Worker via Azure Arc**, avoiding execution limits.
 - **Automatically organizes processed photos**, keeping the directory clean.
 
----
 
 ## Future Enhancements
 - Add support for **resizing images** before upload.
 - Improve error handling for **invalid filenames** or **missing users**.
 - Convert this into a **module** for easier deployment.
-
----
