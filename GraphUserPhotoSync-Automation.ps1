@@ -1,5 +1,7 @@
 function log {
+    [CmdletBinding()]
     param(
+        [Parameter(Mandatory=$True)]
         [string]$Message
     )
     $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
