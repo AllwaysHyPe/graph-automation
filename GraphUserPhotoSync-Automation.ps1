@@ -7,6 +7,7 @@ function log {
     $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     Write-Output = "$TimeStamp - $Message"
 }
+#
 
 # Define photo paths
 $BasePhotoPath = # Example: "C:\Photos\InProgress\"
